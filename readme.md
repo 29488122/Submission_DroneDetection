@@ -39,6 +39,23 @@ setup_2_copy.bat         :: Step 2: copy all available datasets into Datasets/
 
 All scripts are idempotent — safe to re-run if interrupted or after adding more datasets later.
 
+The scripts are mainly for saving time, if you have some other OS, then the process to replicate the behaviour is relatively simple but tedious.
+Download the datasets -> Create expected directory structure -> install requirements -> install patch to formatting.py in the Datasets module.
+
+expected dataset structure: 
+/Datasets/<Dataset_Name>/yes_drone/
+/Datasets/<Dataset_Name>/unknown/
+
+
+
+*Special case*
+
+/Datasets/TrainingDatasets/Al-Emadi/train/yes_drone
+/Datasets/TrainingDatasets/Al-Emadi/train/unknown
+
+(validation folder is kept empty, but HF requires validation folder)
+/Datasets/TrainingDatasets/Al-Emadi/validation/yes_drone
+/Datasets/TrainingDatasets/Al-Emadi/validation/unknown
 ---
 
 ## Dataset Setup
