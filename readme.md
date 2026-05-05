@@ -285,6 +285,9 @@ return np.array(array)
 
 ### Training
 
+The main.py training script for CNN-LSTM should be adjusted for proper training time (ie. epochs [1, 10, 20, etc.])
+Results when evaluating trained CNN-LSTM models should be very close to the reported numbers in the paper -- but for exact match it is recommended to use the uploaded models from huggingface.
+
 ```bash
 .venv311\Scripts\activate.bat
 cd CNN_LSTM
@@ -311,6 +314,7 @@ Configure `resnet_34.py` output path, then:
 cd RESNET34
 python resnet_34.py
 ```
+Similar to CNN-LSTM training, you should edit the desired trainig time.
 
 ---
 
@@ -362,7 +366,7 @@ python augment_audio_files.py --spectrogram
 python augment_audio_files.py --all --yes
 ```
 
-> **Note:** The in-pipeline augmentation in `data\data_transformers.py` has a known bug with augmentation method selection. Keep `self.augment_data = False` in `main_transformers.py` and use the offline script above instead.
+> **Note:** The in-pipeline augmentation in `data\data_transformers.py` has a known bug with augmentation method selection. Keep `self.augment_data = False` in `main_transformers.py` and use the offline script above instead until it is fixed.
 
 ### Training
 
@@ -400,7 +404,11 @@ Despite the functionality of "clip" windowing option in the code, it's functiona
 Run the evaluation scripts directly after verifying the dataset paths in their respective config files.  
 Outputs are `.csv` files per dataset, suitable for further analysis.
 
-> **Note:** Clip-based evaluation (cuts audio and skips aggregation) is present in the codebase but should not be used — it has poor performance and may be broken.
+The evaluation picks up the model files recursively to save time for multi-model evaluation.
+
+### Fusion dataset
+
+Fusion dataset is created by `1_create_fusion_dataset.py` script, which simply combines the csv results under a single directory into a single "fusion" dataset. Works recursively.
 
 ### Calibration dataset
 
@@ -410,7 +418,7 @@ Outputs are `.csv` files per dataset, suitable for further analysis.
 
 ## Results analysis and plotting
 
-When all the evaluations are complete, you should group the resulting folders together and run the script: `Results&Analysis\Analysis\Analysis Scripts\AuxiliaryScripts\01_aapply_epoch_calibration_thresholds`
+When all the evaluations are complete, you should group the resulting folders together and run the script: `Results&Analysis\Analysis\Analysis Scripts\AuxiliaryScripts\01_apply_epoch_calibration_thresholds`
 This script can be run first in --dry-run mode to preview the expected results. After making sure that the files affected are as expected you can run it in execution mode to apply the calibration thresholds to the csv files.
 The script will read the calibration datasets csv results and calculate the optimal threholds for specific epoch for each model. Then it will apply these thresholds to the datasets for those models and epochs.
                 
