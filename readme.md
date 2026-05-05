@@ -28,6 +28,8 @@ A comprehensive audio classification pipeline for drone detection using three de
 
 ## Quick Start
 
+We recommend to download models from: https://huggingface.co/A4821kL/acoustic-drone-detection/tree/main
+
 ```bat
 :: Full first-time setup (run from the repo root in cmd)
 setup_1_env.bat          :: Step 1: venv + auto-downloads + instructions
