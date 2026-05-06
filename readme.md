@@ -35,6 +35,7 @@ We recommend to download models from: https://huggingface.co/A4821kL/acoustic-dr
 setup_1_env.bat          :: Step 1: venv + auto-downloads + instructions
 :: ...download manual datasets, run prepare_h2.ps1 for H-2...
 setup_2_copy.bat         :: Step 2: copy all available datasets into Datasets/
+:: Note that the setup_2 might have unexpected behaviour depending on your folder contents, so manual moving is recommended along with using move_audio script. Expected folder structure explained below.
 ```
 
 All scripts are idempotent — safe to re-run if interrupted or after adding more datasets later.
@@ -43,10 +44,21 @@ The scripts are mainly for saving time, if you have some other OS, then the proc
 Download the datasets -> Create expected directory structure -> install requirements -> install patch to formatting.py in the Datasets module.
 
 expected dataset structure: 
-/Datasets/<Dataset_Name>/yes_drone/
-/Datasets/<Dataset_Name>/unknown/
-
-
+```
+Datasets/
+├── <Dataset_Name>/
+│   ├── yes_drone/
+│   └── unknown/
+│
+└── TrainingDatasets/
+    └── Al-Emadi/          ← Special case
+        ├── train/
+        │   ├── yes_drone/
+        │   └── unknown/
+        └── validation/    ← Required by HuggingFace, kept empty
+            ├── yes_drone/
+            └── unknown/
+```
 
 *Special case*
 
@@ -56,6 +68,17 @@ expected dataset structure:
 (validation folder is kept empty, but HF requires validation folder)
 /Datasets/TrainingDatasets/Al-Emadi/validation/yes_drone
 /Datasets/TrainingDatasets/Al-Emadi/validation/unknown
+
+
+
+
+
+### Evaluation Results organization
+
+In the image below is an example of how the files could be organized from the evaluation results. It is key to include "Epoch" in the path. The scripts: model ranker, comprehensive evaluator, threshold setter, fusion dataset creator can be pointed to the root folder containing the architecture/Epoch/ results. You should also note that Wav2Vec2 file output structure deviates a bit from the lighter architectures, but that has been acknowledged in the code. So when you have the results from the evaluation runs, you should move and organize the files under a single root folder as shown in the image.
+
+
+![How eval results should be organized before running analysis scripts](Eval_folder_Structure.png)
 ---
 
 ## Dataset Setup
@@ -189,6 +212,8 @@ The Al-Emadi dataset is automatically split 80 % / 20 % (alphabetical, determini
 `Datasets\TrainingDatasets\Al-Emadi\train\` and `\validation\` for HuggingFace `audiofolder` loading
 (used by CNN-LSTM and ResNet-34 training).
 
+
+Note that the datasets differ a lot with their folder and packaging sturctures, and might contain a lot of subfolders. When you are sure that the dataset doesnt contain extra files (ie. Yi, H-2) You can run the `move_audio.py`-script to recursively move audio files to the desired directory. Also it might be good to remember that the sample sizes in datasets might vary at different steps of the process (before compiling calibration dataset more sounds in datasets).
 ---
 
 ### Step 5 — Calibration Dataset (`eval_threshold`)
@@ -454,25 +479,35 @@ The script `Results&Analysis\Analysis\Analysis Scripts\AuxiliaryScripts\02_rank_
 
 To generate visualizations use the 6_comprehensive_evaluator.py located in Analysis Scripts folder.
 
+## Project Structure
+
+> **Graphs and plots:** To generate visualizations use `6_comprehensive_evaluator.py` located in the `Analysis Scripts/` folder.
+
+```
 submission_123/
-├── setup_1_env.bat            # Step 1: venv + auto-downloads
-├── setup_2_copy.bat           # Step 3: copy raw datasets into Datasets/
-├── setup.bat                  # Top-level entry point / help
-├── prepare_h2.ps1             # H-2 XML-to-WAV conversion + filter
-├── create_datasets_dirs.ps1   # Creates Datasets/ folder tree
-├── copy_raw_datasets.ps1      # Copies raw data into Datasets/
-├── xml_to_audio.py            # H-2: decode base64 XML -> WAV
-├── replicate_h2.py            # H-2: apply original file-size filter
-├── files_removed_h2.csv       # H-2: list of files removed in original study
-├── build_Yi_dataset.py        # Yi et al.: copy exact subset from Yi\C
-├── yi_et_al_manifest.csv      # Yi et al.: list of the 79,466 files used
-├── generateThresholdEval.py   # Generate calibration subset (dynamic, with manifest diff)
-├── Formatting_Fix/            # datasets library hotfix
-├── datasets_raw/              # Raw downloaded datasets (git-ignored)
-├── Datasets/                  # Processed datasets ready for training
-│   ├── Al-Emadi/             # yes_drone / unknown
+├── setup.bat                          # Top-level entry point / help
+├── setup_1_env.bat                    # Step 1: venv + auto-downloads
+├── setup_2_copy.bat                   # Step 2: copy raw datasets into Datasets/
+│
+├── prepare_h2.ps1                     # H-2 XML-to-WAV conversion + filter
+├── create_datasets_dirs.ps1           # Creates Datasets/ folder tree
+├── copy_raw_datasets.ps1              # Copies raw data into Datasets/
+│
+├── xml_to_audio.py                    # H-2: decode base64 XML -> WAV
+├── replicate_h2.py                    # H-2: apply original file-size filter
+├── files_removed_h2.csv               # H-2: list of files removed in original study
+├── build_Yi_dataset.py                # Yi et al.: copy exact subset from Yi\C
+├── yi_et_al_manifest.csv              # Yi et al.: list of the 79,466 files used
+├── generateThresholdEval.py           # Generate calibration subset (with manifest diff)
+│
+├── Formatting_Fix/                    # datasets library hotfix
+│
+├── datasets_raw/                      # Raw downloaded datasets (git-ignored)
+│
+├── Datasets/                          # Processed datasets ready for training
+│   ├── Al-Emadi/                      # yes_drone / unknown
 │   ├── TrainingDatasets/
-│   │   └── Al-Emadi/        # train/ + validation/ splits for CNN-LSTM/ResNet
+│   │   └── Al-Emadi/                  # train/ + validation/ splits for CNN-LSTM/ResNet
 │   ├── Augmented_Datasets_Alemadi/
 │   ├── DronePrint/
 │   ├── AuthorsCompiledSounds/
@@ -483,13 +518,19 @@ submission_123/
 │   ├── H-2/
 │   ├── Yi et al/
 │   └── eval_threshold/
-├── Models/                    # Saved model checkpoints
-├── CNN_LSTM/                  # CNN-LSTM architecture
-├── RESNET34/                  # ResNet-34 architecture
-├── TRANSFORMER/               # Transformer-based models
-├── TRANSFORMER\utils\augment_audio_files.py  # Data augmentation script for replicating research data-augments.
-├── auxiliary_scripts/replicate_eval_threshold.py     # Replicate eval_threshold exactly from eval_manifest.csv
-└── Results&Analysis/          # Evaluation results and plots
+│
+├── Models/                            # Saved model checkpoints
+│
+├── CNN_LSTM/                          # CNN-LSTM architecture
+├── RESNET34/                          # ResNet-34 architecture
+├── TRANSFORMER/                       # Transformer-based models
+│   └── utils/
+│       └── augment_audio_files.py     # Data augmentation script
+│
+├── auxiliary_scripts/
+│   └── replicate_eval_threshold.py    # Replicate eval_threshold from eval_manifest.csv
+│
+└── Results&Analysis/                  # Evaluation results and plots
 ```
 
 ---
