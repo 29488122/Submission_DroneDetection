@@ -208,11 +208,6 @@ This script:
 - Copies each available dataset into its correct `Datasets/` subfolder
 - **Skips missing datasets with a warning** (not a fatal error) so you can re-run later after adding more
 
-The Al-Emadi dataset is automatically split 80 % / 20 % (alphabetical, deterministic) into
-`Datasets\TrainingDatasets\Al-Emadi\train\` and `\validation\` for HuggingFace `audiofolder` loading
-(used by CNN-LSTM and ResNet-34 training).
-
-
 Note that the datasets differ a lot with their folder and packaging sturctures, and might contain a lot of subfolders. When you are sure that the dataset doesnt contain extra files (ie. Yi, H-2) You can run the `move_audio.py`-script to recursively move audio files to the desired directory. Also it might be good to remember that the sample sizes in datasets might vary at different steps of the process (before compiling calibration dataset more sounds in datasets).
 ---
 
